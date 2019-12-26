@@ -18,7 +18,10 @@ from django.utils.translation import ugettext as _
         <label class="label setting-label" for="pdf_edit_url">${_("PDF URL")}</label>
         <input class="input setting-input" id="pdf_edit_url" value="${ url }" type="text">
       </div>
-      <span class="tip setting-help">${_("The URL of the PDF file")}</span>
+      <span class="tip setting-help">
+        <label>${_("The URL of the PDF file")}</label>
+        <a href="/assets/${course_id}/" target="_blank"><span class="fa fa-upload"></span></a>
+      </span>
     </li>
 
     <li class="field comp-setting-entry is-set">
@@ -51,7 +54,7 @@ from django.utils.translation import ugettext as _
   <div class="xblock-actions">
     <ul>
       <li class="action-item">
-        <a href="#" class="button action-primary action-save">${_("Register")}</a>
+        <a href="#" class="button action-primary action-save">${_("Save")}</a>
       </li>
       <li class="action-item">
         <a href="#" class="button action-cancel">${_("Cancel")}</a>

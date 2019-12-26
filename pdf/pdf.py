@@ -12,6 +12,7 @@ from xblock.scorable import ScorableXBlockMixin, Score
 from .utils import _, DummyTranslationService
 import pkg_resources
 from mako.template import Template
+from xmodule.modulestore.django import modulestore
 
 loader = ResourceLoader(__name__)
 
@@ -152,6 +153,7 @@ class PdfBlock(
             'url': self.url,
             'allow_download': self.allow_download,
             'source_text': self.source_text,
+            'course_id': self.course_id,
             'source_url': self.source_url
         }
         html = get_html('templates/html/pdf_edit.html', context)
