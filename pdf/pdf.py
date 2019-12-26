@@ -10,8 +10,16 @@ from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from xblock.scorable import ScorableXBlockMixin, Score
 from .utils import _, DummyTranslationService
+import pkg_resources
+from mako.template import Template
 
 loader = ResourceLoader(__name__)
+
+
+def get_html(path, data):
+    tplt = Template(pkg_resources.resource_string(__name__, path))
+    return tplt.render_unicode(**data)
+
 
 @XBlock.wants('settings')
 @XBlock.needs('i18n')
@@ -104,11 +112,15 @@ class PdfBlock(
             'source_url': self.source_url,
             '_i18n_service': self.i18n_service
         }
-        html = loader.render_django_template(
-            'templates/html/pdf_view.html',
-            context=context,
-            i18n_service=self.i18n_service,
-        )
+
+        html = get_html('templates/html/pdf_view.html', context)
+
+        #html = loader.render_django_template(
+        #    'templates/html/pdf_view.html',
+        #    #'web/viewer.html',
+        #    context=context,
+        #    i18n_service=self.i18n_service,
+        #)
 
         event_type = 'edx.pdf.loaded'
         event_data = {
@@ -118,7 +130,15 @@ class PdfBlock(
         self.runtime.publish(self, event_type, event_data)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
-        frag.initialize_js('pdfXBlockInitView')
+        #frag.add_javascript(self.load_resource("web/viewer.js"))
+        frag.initialize_js('pdfXBlockInitView', {
+            'display_name': self.display_name,
+            'url': self.url,
+            'allow_download': self.allow_download,
+            'source_text': self.source_text,
+            'source_url': self.source_url,
+            'iframe_url': '/static/pdf/web/viewer.html?file='+self.url
+        })
         return frag
 
     def studio_view(self, context=None):
@@ -134,11 +154,12 @@ class PdfBlock(
             'source_text': self.source_text,
             'source_url': self.source_url
         }
-        html = loader.render_django_template(
-            'templates/html/pdf_edit.html',
-            context=context,
-            i18n_service=self.i18n_service,
-        )
+        html = get_html('templates/html/pdf_edit.html', context)
+        #html = loader.render_django_template(
+        #    'templates/html/pdf_edit.html',
+        #    context=context,
+        #    i18n_service=self.i18n_service,
+        #)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
         frag.initialize_js('pdfXBlockInitEdit')

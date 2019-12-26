@@ -1,25 +1,54 @@
-{% load i18n %}
-{% load l10n %}
+<%!
+from django.utils.translation import ugettext as _
+from crequest.middleware import CrequestMiddleware
+try:
+    from urllib.parse import urlparse
+except ImportError:
+     from urlparse import urlparse
+%>
 
 <div class="pdf_block">
-  <h2>{% trans display_name %} </h2>
-  <object data="{{ url }}" type="application/pdf" width="100%" height="600">
-    <p>
-      {% trans "It appears you don't have a PDF plugin for this browser." %}
-    </p>
-  </object>
-  {% if allow_download or source_url != "" %}
+  <h2>${display_name}</h2>
+  <%
+    host_name_of_pdf_file_url = '{uri.netloc}'.format(uri=urlparse(url))
+    current_host_name = CrequestMiddleware.get_request().get_host()
+    if host_name_of_pdf_file_url == current_host_name:
+      mode = 'h5'
+    else:
+      mode = 'embed'
+    endif
+  %>
+  <div class="pdf-wrapper ${mode}">
+    <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600">
+      <p>
+        ${_("It appears you don't have a PDF plugin for this browser.")}
+      </p>
+    </object>
+    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600">
+      <p>
+        ${_("It appears you don't have a PDF plugin for this browser.")}
+      </p>
+    </object>
+  </div>
+
+  % if allow_download or source_url != "":
   <ul>
-    {% if allow_download %}
+    % if allow_download:
     <li class="pdf-download-button">
-      <a href="{{ url }}" download>{% trans "Download the PDF" %}</a>
+      <a href="${ url }" download>${_("Download the PDF")}</a>
     </li>
-    {% endif %}
-    {% if source_url != "" %}
+    % endif
+    % if source_url != "":
     <li class="pdf-download-button">
-      <a href="{{ source_url }}" download>{% if source_text == "" %} {% trans "Download the source document" %} {% else %}{{ source_text }}{% endif %}</a>
+      <a href="${ source_url }" download>
+        % if source_text == "":
+          ${_("Download the source document")}
+        % else:
+          ${ source_text }
+        % endif
+      </a>
     </li>
-    {% endif %}
+    % endif
   </ul>
-  {% endif %}
+  % endif
 </div>

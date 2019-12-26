@@ -1,1 +1,2 @@
 flake8==2.4.0
+django-crequest==2018.5.11
