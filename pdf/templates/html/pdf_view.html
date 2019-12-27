@@ -19,18 +19,17 @@ except ImportError:
     endif
   %>
   <div class="pdf-wrapper ${mode}">
-    ## <p>${_("It appears you don't have a PDF plugin for this browser.")}</p>
     <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
-    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600"></object>
+    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser.")}</p></object>
   </div>
 
-  % if allow_download or source_url != "":
+  % if source_url != "":
   <ul>
-    % if allow_download:
-    <li class="pdf-download-button">
-      <a href="${ url }" download>${_("Download the PDF")}</a>
-    </li>
-    % endif
+    ##% if allow_download:
+    ##<li class="pdf-download-button">
+    ##  <a href="${ url }" download>${_("Download the PDF")}</a>
+    ##</li>
+    ##% endif
     % if source_url != "":
     <li class="pdf-download-button">
       <a href="${ source_url }" download>
