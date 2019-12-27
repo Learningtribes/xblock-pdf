@@ -25,6 +25,7 @@ setup(
     install_requires=[
         'XBlock',
         'xblock-utils',
+        'django-crequest',
     ],
     entry_points={
         'xblock.v1': [
