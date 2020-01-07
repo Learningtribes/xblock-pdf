@@ -131,7 +131,7 @@ class PdfBlock(
         self.runtime.publish(self, event_type, event_data)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
-        #frag.add_javascript(self.load_resource("web/viewer.js"))
+        #frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
         frag.initialize_js('pdfXBlockInitView', {
             'display_name': self.display_name,
             'url': self.url,

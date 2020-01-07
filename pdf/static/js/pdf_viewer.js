@@ -14,11 +14,9 @@ function pdfXBlockInitView(runtime, element, json) {
     console.log(aa)*/
 
     //if (window.location.hostname == json.url)
-    $('.pdf-h5-container').attr('data', '/static/pdf/web/viewer.html?file='+json.url)
+    $('.pdf-h5-container').attr('data', '/xblock/resource/pdf/public/web/viewer.html?file='+json.url)
 
     $(function () {
-
-
         element.find('.pdf-download-button').on('click', function () {
             var handlerUrl = runtime.handlerUrl(element, 'on_download');
             $.post(handlerUrl, '{}');
