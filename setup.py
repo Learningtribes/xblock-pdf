@@ -25,6 +25,7 @@ setup(
     install_requires=[
         'XBlock',
         'django-crequest',
+        'lxml==3.8.0'
     ],
     dependency_links=[
         'git+https://github.com/Learningtribes/xblock-utils.git@ec95e5e718c4144dc8a43d116a545f210d929667#egg=xblock-utils'
