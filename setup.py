@@ -35,5 +35,5 @@ setup(
             'pdf = pdf.pdf:PdfBlock',
         ]
     },
-    package_data=package_data('pdf', ['static', 'templates', 'translations']),
+    package_data=package_data('pdf', ['public', 'static', 'templates', 'translations']),
 )
