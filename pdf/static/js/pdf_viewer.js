@@ -8,12 +8,6 @@ function pdfXBlockInitView(runtime, element, json) {
         element = $(element);
     }
 
-    // window.location.host+'/static/pdf/web/viewer.html?file='+json.url
-    /*debugger
-    let aa = json;
-    console.log(aa)*/
-
-    //if (window.location.hostname == json.url)
     $('.pdf-h5-container').attr('data', '/xblock/resources/pdf/public/web/viewer.html?file='+json.url)
 
     $(function () {
