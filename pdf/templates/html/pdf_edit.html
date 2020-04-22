@@ -2,8 +2,44 @@
 from django.utils.translation import ugettext as _
 %>
 
-<div class="wrapper-comp-settings editor-with-buttons is-active" id="settings-tab">
-  <ul class="list-input settings-list">
+<div class="wrapper-comp-settings editor-with-buttons is-active settings-pdf" id="settings-tab">
+    <div role="region" aria-label="Upload assets" class="upload-zone" id="upload-zone">
+        <div class="alert-field hidden" role="alert">
+            <span class="btn btn-close" id="alert-field-close">x</span>
+            <div class="alert-dialog">
+                <span class="alert-dialog-text hidden" id="alert-info-text">${_("Uploading...")}</span>
+                <span class="alert-dialog-text hidden" id="alert-success-text">${_("Uploading finished.")}</span>
+                <span class="alert-dialog-text hidden" id="alert-error-text">${_("Uploading failed.")}</span>
+            </div>
+        </div>
+        <div class="drop-zone center-text" id="asset-drop-zone" aria-disabled="false">
+            <div class="center-text" id="asset-drop-zone-icon">
+              <span aria-hidden="true" class="center-text fa fa-cloud-upload fa-7x"></span>
+            </div>
+            <p class="drop-info" id="asset-choose-or-drop">
+                <span id="browse-button" class="btn btn-browse">${_("Choose your PDF")}</span>
+                <span>${_("or Drag here")}</span>
+            </p>
+            <p aria-hidden="true" class="center-text" id="asset-drop-zone-max-file-size-label">
+                ${_("Size limit")}: 10 MB
+            </p>
+            <input type="file" id="file-input" multiple autocomplete="off" style="display: none;">
+        </div>
+        <div class="upload-help center-text">
+            <span id="upload-or-label">or</span>
+          <div class="help-info center-text">
+            <label id="pdf-url-info">
+                <%
+                    course_url = '/assets/' + str(course_id) + '/'
+                    label_text = _("Copy the URL of a PDF you previously uploaded in <a href={course_url} target='_blank'>{fu_url}</a>").format(course_url=course_url, fu_url="Files & Uploads")
+                %>
+                ${label_text}
+            </label>
+          </div>
+        </div>
+    </div>
+
+    <ul class="list-input settings-list">
 
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
@@ -18,10 +54,8 @@ from django.utils.translation import ugettext as _
         <label class="label setting-label" for="pdf_edit_url">${_("PDF URL")}</label>
         <input class="input setting-input" id="pdf_edit_url" value="${ url }" type="text">
       </div>
-      <span class="tip setting-help">
-        <label>${_("The URL of the PDF file")}</label>
-        <a href="/assets/${course_id}/" target="_blank"><span class="fa fa-upload"></span></a>
-      </span>
+        <span class="tip setting-help">${_("This URL will be automatically updated after you upload a file.")}</span>
+        <span class="tip setting-help">${_("Or you can paste here the URL you copied in File & Uploads.")}</span>
     </li>
 
     <li class="field comp-setting-entry is-set">
