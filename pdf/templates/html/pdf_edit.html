@@ -31,7 +31,7 @@ from django.utils.translation import ugettext as _
             <label id="pdf-url-info">
                 <%
                     course_url = '/assets/' + str(course_id) + '/'
-                    label_text = _("Copy the URL of a PDF you previously uploaded in <a href={course_url} target='_blank'>{fu_url}</a>").format(course_url=course_url, fu_url="Files & Uploads")
+                    label_text = _("Copy the Studio URL of a PDF you previously uploaded in <a href={course_url} target='_blank'>{fu_url}</a>").format(course_url=course_url, fu_url="Files & Uploads")
                 %>
                 ${label_text}
             </label>
