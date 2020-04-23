@@ -26,7 +26,7 @@ from django.utils.translation import ugettext as _
             <input type="file" id="file-input" multiple autocomplete="off" style="display: none;">
         </div>
         <div class="upload-help center-text">
-            <span id="upload-or-label">or</span>
+            <span id="upload-or-label">${_("or")}</span>
           <div class="help-info center-text">
             <label id="pdf-url-info">
                 <%
@@ -74,7 +74,7 @@ from django.utils.translation import ugettext as _
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
         <label class="label setting-label" for="pdf_edit_source_text">${_("Source document button text")}</label>
-        <input class="input setting-input" id="pdf_edit_source_text" value="${ source_text }" type="text" placeholder=" ${_('Default : Download the source document')}">
+        <input class="input setting-input" id="pdf_edit_source_text" value="${ source_text }" type="text" placeholder=" ${_('Default: Download the source document')}">
       </div>
       <div class="wrapper-comp-setting">
         <label class="label setting-label" for="pdf_edit_source_url">${_("Source document URL")}</label>
