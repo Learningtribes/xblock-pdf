@@ -21,7 +21,7 @@ from django.utils.translation import ugettext as _
                 <span>${_("or Drag here")}</span>
             </p>
             <p aria-hidden="true" class="center-text" id="asset-drop-zone-max-file-size-label">
-                ${_("Size limit")}: 10 MB
+                ${_("Size limit: ")}10 MB
             </p>
             <input type="file" id="file-input" multiple autocomplete="off" style="display: none;">
         </div>
@@ -31,7 +31,7 @@ from django.utils.translation import ugettext as _
             <label id="pdf-url-info">
                 <%
                     course_url = '/assets/' + str(course_id) + '/'
-                    label_text = _("Copy the Studio URL of a PDF you previously uploaded in <a href={course_url} target='_blank'>{fu_url}</a>").format(course_url=course_url, fu_url="Files & Uploads")
+                    label_text = _("Copy the Studio URL of a PDF you previously uploaded in <a href={course_url} target='_blank'>Files & Uploads</a>").format(course_url=course_url)
                 %>
                 ${label_text}
             </label>
@@ -55,7 +55,7 @@ from django.utils.translation import ugettext as _
         <input class="input setting-input" id="pdf_edit_url" value="${ url }" type="text">
       </div>
         <span class="tip setting-help">${_("This URL will be automatically updated after you upload a file.")}</span>
-        <span class="tip setting-help">${_("Or you can paste here the URL you copied in File & Uploads.")}</span>
+        <span class="tip setting-help">${_("Or you can paste here the URL you copied in Files & Uploads.")}</span>
     </li>
 
     <li class="field comp-setting-entry is-set">
