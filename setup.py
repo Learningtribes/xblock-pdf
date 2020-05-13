@@ -23,7 +23,7 @@ setup(
         'pdf',
     ],
     install_requires=[
-        'XBlock',
+        'XBlock==1.2.9',
         'django-crequest',
         'lxml==3.8.0'
     ],
