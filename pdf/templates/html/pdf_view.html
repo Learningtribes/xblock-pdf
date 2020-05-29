@@ -20,10 +20,12 @@ except ImportError:
       mode = 'embed'
     endif
   %>
+  % if url != "":
   <div class="pdf-wrapper ${mode}">
     <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
-    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser.")}</p></object>
+    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
+  % endif
 
   % if source_url != "":
   <ul>
