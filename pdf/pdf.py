@@ -129,6 +129,9 @@ class PdfBlock(
             'source_url': self.source_url,
         }
         self.runtime.publish(self, event_type, event_data)
+
+        self.runtime.publish(self, 'completion', {'completion': 1.0})
+
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
         ##frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
