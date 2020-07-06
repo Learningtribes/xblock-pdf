@@ -8,7 +8,7 @@ function pdfXBlockInitEdit(runtime, element) {
     $(element).find('.action-save').bind('click', function () {
         var data = {
             'display_name': $('#pdf_edit_display_name').val(),
-            url: $('#pdf_edit_url').val(),
+            url: $('#pdf_edit_url').val().trim(),
             'allow_download': $('#pdf_edit_allow_download').val(),
             'source_text': $('#pdf_edit_source_text').val(),
             'source_url': $('#pdf_edit_source_url').val()
@@ -41,7 +41,6 @@ function pdfXBlockInitEdit(runtime, element) {
     var fileInput = $('#file-input')[0];
     fileInput.onchange = function () {
         var file = fileInput.files[0];
-        console.log('file input', file);
         var formData = new FormData();
         formData.append('file', file);
         var request = new XMLHttpRequest();
@@ -71,7 +70,7 @@ function pdfXBlockInitEdit(runtime, element) {
         request.onload = function () {
             var response = JSON.parse(request.responseText);
             if (request.status === 200) {
-                $('#pdf_edit_url').val(response.asset.portable_url);
+                $('#pdf_edit_url').val(response.asset.external_url);
                alertField.removeClass('alert-info');
                alertField.addClass('alert-success');
                alertField.removeClass('alert-error');
@@ -137,7 +136,7 @@ function pdfXBlockInitEdit(runtime, element) {
         request.onload = function () {
             var response = JSON.parse(request.responseText);
             if (request.status === 200) {
-                $('#pdf_edit_url').val(response.asset.portable_url);
+                $('#pdf_edit_url').val(response.asset.external_url);
                alertField.removeClass('alert-info');
                alertField.addClass('alert-success');
                alertField.removeClass('alert-error');
