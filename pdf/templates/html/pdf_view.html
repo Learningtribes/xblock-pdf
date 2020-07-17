@@ -10,7 +10,14 @@ except ImportError:
 <div class="pdf_placeholder" style="width: auto; height: 480px; display: none;"></div>
 
 <div class="pdf_block">
-  <h2>${display_name}</h2>
+  <div class="block-header-wrapper pdf-header-wrapper">
+    <h3>${display_name}</h3>
+  </div>
+  <div class="block-label pdf-label">
+    <span class="fal fa-file-pdf block-label-icon"></span>
+    <span class="block-label-text">${_("PDF")}</span>
+  </div>
+  <hr class="sep-line">
   <%
     host_name_of_pdf_file_url = '{uri.netloc}'.format(uri=urlparse(url))
     current_host_name = CrequestMiddleware.get_request().get_host()
