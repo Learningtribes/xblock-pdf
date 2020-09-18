@@ -16,6 +16,17 @@ function pdfXBlockInitView(runtime, element, json) {
             $.post(handlerUrl, '{}');
         });
     });
+
+    var handlerUrl = runtime.handlerUrl(element, 'publish_completion');
+
+    window.onload = function() {
+        setTimeout(function() {
+            var data = {
+                'completion': 1.0,
+            };
+            $.post(handlerUrl, JSON.stringify(data)).complete(function() {});
+        }, 1000);
+    };
 }
 
 window.pdfXBlockInitView = pdfXBlockInitView;
