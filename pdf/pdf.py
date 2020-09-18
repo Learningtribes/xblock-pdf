@@ -9,6 +9,7 @@ from xblock.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from xblock.scorable import ScorableXBlockMixin, Score
+from xblock.exceptions import JsonHandlerError
 from .utils import _, DummyTranslationService
 import pkg_resources
 from mako.template import Template
@@ -130,8 +131,6 @@ class PdfBlock(
         }
         self.runtime.publish(self, event_type, event_data)
 
-        self.runtime.publish(self, 'completion', {'completion': 1.0})
-
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
         ##frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
@@ -144,6 +143,33 @@ class PdfBlock(
             'iframe_url': '/static/pdf/web/viewer.html?file='+self.url
         })
         return frag
+
+    @XBlock.json_handler
+    def publish_completion(self, data, dispatch):  # pylint: disable=unused-argument
+        """
+        Entry point for completion for student_view.
+
+        Parameters:
+            data: JSON dict:
+                key: "completion"
+                value: float in range [0.0, 1.0]
+
+            dispatch: Ignored.
+        Return value: JSON response (200 on success, 400 for malformed data)
+        """
+        completion_service = self.runtime.service(self, 'completion')
+        if completion_service is None:
+            raise JsonHandlerError(500, u"No completion service found")
+        elif not completion_service.completion_tracking_enabled():
+            raise JsonHandlerError(404, u"Completion tracking is not enabled and API calls are unexpected")
+        if not isinstance(data['completion'], (int, float)):
+            message = u"Invalid completion value {}. Must be a float in range [0.0, 1.0]"
+            raise JsonHandlerError(400, message.format(data['completion']))
+        elif not 0.0 <= data['completion'] <= 1.0:
+            message = u"Invalid completion value {}. Must be in range [0.0, 1.0]"
+            raise JsonHandlerError(400, message.format(data['completion']))
+        self.runtime.publish(self, "completion", data)
+        return {"result": "ok"}
 
     def studio_view(self, context=None):
         """
