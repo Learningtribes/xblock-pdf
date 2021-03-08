@@ -5,7 +5,7 @@ from django.template import Context, Template
 
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
-from xblock.fragment import Fragment
+from web_fragments.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from xblock.scorable import ScorableXBlockMixin, Score
