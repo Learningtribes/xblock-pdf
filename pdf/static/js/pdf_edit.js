@@ -37,7 +37,7 @@ function pdfXBlockInitEdit(runtime, element) {
     $(element).find("#browse-button").bind('click', function (){
         $('#file-input').click();
     });
-    
+
     var fileInput = $('#file-input')[0];
     fileInput.onchange = function () {
         var file = fileInput.files[0];
@@ -157,8 +157,30 @@ function pdfXBlockInitEdit(runtime, element) {
       dropZone.style.background = "white";
       return false;
     };
-    
+
     $('#alert-field-close')[0].onclick = function () {
         $('.alert-field').addClass('hidden');
     }
+
+    if (LearningTribes && LearningTribes.QuestionMark) {
+        $wrappers = $('.wrapper-comp-settings .question-mark-wrapper')
+        $wrappers.each(function(i, wrapper){
+            new LearningTribes.QuestionMark(wrapper)
+        })
+    }
+
+    if (LearningTribes && LearningTribes.Switcher) {
+        var switcher = $('.wrapper-comp-settings').find('.switcher-wrapper')[0];
+        var $select = $('#pdf_edit_allow_download')
+        new LearningTribes.Switcher(switcher, $select.find('option[selected]')[0].value.toLowerCase(),
+            function(checked){
+            var checkedStr = checked.toString();
+            checkedStr = checkedStr[0].toUpperCase() + checkedStr.slice(1);
+            $('#pdf_edit_allow_download').find('option[value='+checkedStr+']')
+                .removeAttr('selected')
+                .attr('selected', true)
+            }
+        )
+    }
+
 }
