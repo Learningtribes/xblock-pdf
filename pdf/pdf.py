@@ -5,7 +5,7 @@ from django.template import Context, Template
 
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
-from web_fragments.fragment import Fragment
+from xblock.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from xblock.scorable import ScorableXBlockMixin, Score
@@ -135,6 +135,7 @@ class PdfBlock(
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
         ##frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
+
         frag.initialize_js('pdfXBlockInitView', {
             'display_name': self.display_name,
             'url': self.url,
@@ -143,6 +144,7 @@ class PdfBlock(
             'source_url': self.source_url,
             'iframe_url': '/static/pdf/web/viewer.html?file='+self.url
         })
+
         return frag
 
     def studio_view(self, context=None):
