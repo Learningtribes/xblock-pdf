@@ -8,7 +8,7 @@ function pdfXBlockInitView(runtime, element, json) {
         element = $(element);
     }
 
-    $('.pdf-h5-container').attr('data', '/xblock/resources/pdf/public/web/viewer.html?file='+json.url)
+    element.find(".pdf-h5-container[data='']").attr('data', '/xblock/resources/pdf/public/web/viewer.html?file='+json.url)
 
     $(function () {
         element.find('.pdf-download-button').on('click', function () {
