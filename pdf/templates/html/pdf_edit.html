@@ -76,11 +76,17 @@ from django.utils.translation import ugettext as _
           <span class="tip setting-help">${_("Display a download button for this PDF.")}</span>
         </li>
 
-        <li class="field comp-setting-entry is-set">
+        <li class="field comp-setting-entry">
           <div class="wrapper-comp-setting">
             <label class="label setting-label" for="pdf_edit_source_text">${_("Source document button text")}</label>
             <input class="input setting-input" id="pdf_edit_source_text" value="${ source_text }" type="text" placeholder=" ${_('Default: Download the source document')}">
           </div>
+        </li>
+        <li class="field comp-setting-entry is-set">
+          <!--<div class="wrapper-comp-setting">
+            <label class="label setting-label" for="pdf_edit_source_text">${_("Source document button text")}</label>
+            <input class="input setting-input" id="pdf_edit_source_text" value="${ source_text }" type="text" placeholder=" ${_('Default: Download the source document')}">
+          </div>-->
           <div class="wrapper-comp-setting">
             <label class="label setting-label" for="pdf_edit_source_url">${_("Source document URL")}</label>
             <input class="input setting-input" id="pdf_edit_source_url" value="${ source_url }" type="text">
