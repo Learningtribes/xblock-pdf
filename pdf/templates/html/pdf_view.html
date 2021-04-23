@@ -30,17 +30,18 @@ except ImportError:
   % if url != "":
   <div class="pdf-wrapper ${mode}">
     <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
-    <object class="pdf-embed-container" data="${url}#view=FitH" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
+    <object class="pdf-embed-container" data="${url}#view=FitH&toolbar=${1 if allow_download else 0}" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
   % endif
 
-  % if source_url != "":
+  % if source_url != "" or allow_download:
   <ul>
-    ##% if allow_download:
-    ##<li class="pdf-download-button">
-    ##  <a href="${ url }" download>${_("Download the PDF")}</a>
-    ##</li>
-    ##% endif
+    % if allow_download:
+    <li class="pdf-download-button">
+      <a href="${ url }" download>${_("Download the PDF")}</a>
+    </li>
+    % endif
+
     % if source_url != "":
     <li class="pdf-download-button">
       <a href="${ source_url }" download>
