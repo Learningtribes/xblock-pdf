@@ -32,6 +32,19 @@ except ImportError:
     <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
     <object class="pdf-embed-container" data="${url}#view=FitH&toolbar=${1 if allow_download else 0}" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
+  % else:
+  <div class="colorful-boxes">
+      <div class="blue-block">
+          <span class="icon"><span class="fal fa-file-pdf"></span></span>
+          <strong>${_('Use PDF Component')}</strong>
+          <p>${_('Add this component to display PDF in iframe.')}</p>
+      </div>
+      <div class="yellow-block">
+          <span class="icon"><span class="fal fa-play"></span></span>
+          <strong>${_('You are now ready')}</strong>
+          <p>${_('Add a PDF by clicking on the pencil icon.')}</p>
+      </div>
+  </div>
   % endif
 
   % if source_url != "" or allow_download:
