@@ -28,6 +28,8 @@ except ImportError:
     endif
     if host_name_of_pdf_file_url == current_host_name.split('-',1)[1]:
       pdf_url = urlparse(url).path
+    else:
+      pdf_url = url
     endif
   %>
   % if url != "":
