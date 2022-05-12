@@ -14,9 +14,9 @@ function pdfXBlockInitEdit(runtime, element) {
             'source_url': $('#pdf_edit_source_url').val()
         };
 
-        if (data.url && data.url[0] !== '/' && data.url[0] !== 'h') {
-            data.url = window.location.href.split(':')[0] + '://' + data.url;
-        }
+        // if (data.url && data.url[0] !== '/' && data.url[0] !== 'h') {
+        //     data.url = window.location.href.split(':')[0] + '://' + data.url;
+        // }
 
         runtime.notify('save', { state: 'start' });
 
