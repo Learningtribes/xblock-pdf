@@ -26,7 +26,7 @@ except ImportError:
     else:
       mode = 'embed'
     endif
-    if host_name_of_pdf_file_url in current_host_name:
+    if host_name_of_pdf_file_url.split('.', 1)[1] in current_host_name:
       pdf_url = urlparse(url).path
     else:
       pdf_url = url
