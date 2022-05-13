@@ -16,6 +16,7 @@ function pdfXBlockInitEdit(runtime, element) {
 
         if (data.url && data.url[0] !== '/' && data.url[0] !== 'h') {
             data.url = window.location.href.split(':')[0] + '://' + data.url;
+            // data.url = '/' + data.url.split('/')[1]
         }
 
         runtime.notify('save', { state: 'start' });
