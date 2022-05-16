@@ -28,16 +28,15 @@ except ImportError:
     endif
     try:
       if host_name_of_pdf_file_url.split('.', 1)[1] in current_host_name:
-        global url
-        url = urlparse(url).path
+        pdf_url = urlparse(url).path
       endif
     except:
-      pass
+      pdf_url = url
   %>
-  % if url != "":
+  % if pdf_url != "":
   <div class="pdf-wrapper ${mode}">
     <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
-    <object class="pdf-embed-container" data="${url}#view=FitH&toolbar=${1 if allow_download else 0}" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
+    <object class="pdf-embed-container" data="${pdf_url}#view=FitH&toolbar=${1 if allow_download else 0}" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
   % else:
   <div class="colorful-boxes">
