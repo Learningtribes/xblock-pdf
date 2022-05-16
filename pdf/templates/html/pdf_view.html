@@ -28,6 +28,7 @@ except ImportError:
     endif
     try:
       if host_name_of_pdf_file_url.split('.', 1)[1] in current_host_name:
+        global url
         url = urlparse(url).path
       endif
     except:
