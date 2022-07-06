@@ -25,7 +25,6 @@ def get_html(path, data):
 @XBlock.wants('settings')
 @XBlock.needs('i18n')
 class PdfBlock(
-    ScorableXBlockMixin,
     XBlock,
     XBlockWithSettingsMixin,
     ThemableXBlockMixin
@@ -129,8 +128,6 @@ class PdfBlock(
             'source_url': self.source_url,
         }
         self.runtime.publish(self, event_type, event_data)
-
-        self.runtime.publish(self, 'completion', {'completion': 1.0})
 
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
