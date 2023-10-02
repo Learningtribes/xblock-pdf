@@ -1,5 +1,23 @@
 /* Javascript for pdfXBlock. */
 function pdfXBlockInitEdit(runtime, element) {
+
+    // TODO: remove logs below
+    console.log('============================');
+    console.log('Im inside PDF edit...');
+    console.log('============================');
+    console.log(`runtime: ${runtime}`);
+    console.log(`typeof: ${typeof(runtime)}`);
+    console.log('============================');
+    console.log(`element: ${JSON.stringify(element[0].dataset['usageId'].split(':')['0'])}`);
+    console.log(`element: ${JSON.stringify(element[0].dataset['usageId'].slice(0, 3))}`);
+    console.log(`typeof: ${typeof(element)}`);
+    console.log('============================');
+
+    // TODO: remove comment below
+    // check if it is a library
+    var usageId = element[0].dataset['usageId'];
+    var isLibrary = usageId.slice(0, 3) === "lib";
+
     $(element).find('.action-cancel').bind('click', function () {
         runtime.notify('cancel', {});
         $('.pdf_placeholder').hide();
@@ -45,7 +63,17 @@ function pdfXBlockInitEdit(runtime, element) {
         var formData = new FormData();
         formData.append('file', file);
         var request = new XMLHttpRequest();
-        var course_key = element[0].dataset['usageId'].split('+', 3).join('+').replace('block', 'course');
+        //var course_key = element[0].dataset['usageId'].split('+', 3).join('+').replace('block', 'course');
+
+
+        // TODO: remove comments below
+        // It will replace:
+        //   'block' by 'course' OR 'lib-block' by 'library'
+        var splitCount = isLibrary ? 2 : 3;
+        var keyword = isLibrary ? 'lib-block' : 'block';
+        var replacement = isLibrary ? 'library' : 'course';
+        var course_key = usageId.split('+', splitCount).join('+').replace(keyword, replacement);
+
         var upload_url = '/assets/' + course_key + '/';
         var csrftoken = $.cookie('csrftoken');
         var alertField = $('.alert-field');
@@ -104,10 +132,38 @@ function pdfXBlockInitEdit(runtime, element) {
       dropZone.style.background = "white";
     };
     dropZone.ondrop = function(ev) {
+      // TODO: remove logs below
+      console.log('============================');
+      console.log('Im inside onDrop...');
+      console.log('============================');
+      console.log(`element (ondrop): ${JSON.stringify(element)}`);
+      console.log('============================');
+      console.log(isLibrary ? "IT IS A LIBRARY (ondrop)..." : "IT IS A COURSE...");
+
       var oFile = ev.dataTransfer.files[0];
       var request = new XMLHttpRequest();
       var reader = new FileReader();
-      var course_key = element[0].dataset['usageId'].split('+', 3).join('+').replace('block', 'course');
+      // TODO: remove comment below
+      // this is the original code:
+      //var course_key = element[0].dataset['usageId'].split('+', 2).join('+').replace('block', 'course');
+      
+      // this is the new code:
+      var splitCount = isLibrary ? 2 : 3;
+      var keyword = isLibrary ? 'lib-block' : 'block';   
+      var replacement = isLibrary ? 'library' : 'course';   // <== It doesn't works
+      //var replacement = isLibrary ? 'course' : 'course';  // <== It works
+      var course_key = usageId.split('+', splitCount).join('+').replace(keyword, replacement);
+
+      // TODO: remove logs below
+      // if (isLibrary) course_key = `${course_key}+2023-01-01`  // <== It works
+      // the 'library key' format will be changed
+      // from: library-v1:Triboo+CSPROB
+      // to:   course-v1:Triboo+CSPROB+2023-01-01 
+      
+      // TODO: remove logs below
+      console.info(`course_key: ${course_key}`);
+      console.info(`course_key (type): ${typeof(course_key)}`);
+
       var upload_url = '/assets/' + course_key + '/';
       var csrftoken = $.cookie('csrftoken');
       var alertField = $('.alert-field');
