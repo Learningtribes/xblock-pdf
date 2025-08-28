@@ -21,7 +21,7 @@ except ImportError:
   <%
     host_name_of_pdf_file_url = '{uri.netloc}'.format(uri=urlparse(url))
     current_host_name = CrequestMiddleware.get_request().get_host()
-    if host_name_of_pdf_file_url == current_host_name:
+    if host_name_of_pdf_file_url == current_host_name or url[0] == '/':
       mode = 'h5'
     else:
       mode = 'embed'
@@ -37,7 +37,7 @@ except ImportError:
   %>
   % if pdf_url != "":
   <div class="pdf-wrapper ${mode}">
-    <object class="pdf-h5-container" data="" type="text/html" width="100%" height="600"></object>
+    <object class="pdf-h5-container" data-src="${pdf_url}" data="" type="text/html" width="100%" height="600"></object>
     <object class="pdf-embed-container" data-src="${pdf_url}" data="" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
   % else:
