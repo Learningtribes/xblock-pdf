@@ -21,7 +21,7 @@ except ImportError:
   <%
     host_name_of_pdf_file_url = '{uri.netloc}'.format(uri=urlparse(url))
     current_host_name = CrequestMiddleware.get_request().get_host()
-    if host_name_of_pdf_file_url == current_host_name or url[0] == '/':
+    if host_name_of_pdf_file_url == current_host_name or (url and url.startswith('/')):
       mode = 'h5'
     else:
       mode = 'embed'
