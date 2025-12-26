@@ -25,7 +25,7 @@ setup(
     install_requires=[
         'XBlock==1.2.9',
         'django-crequest',
-        'lxml==3.8.0',
+        'lxml==4.9.1',
         'web-fragments==0.2.2',
     ],
     dependency_links=[
