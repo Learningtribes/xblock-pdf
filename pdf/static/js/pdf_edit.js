@@ -1,5 +1,10 @@
 /* Javascript for pdfXBlock. */
 function pdfXBlockInitEdit(runtime, element) {
+
+    // check if it is a library
+    var usageId = element[0].dataset['usageId'];
+    var isLibrary = usageId.slice(0, 3) === "lib";
+
     $(element).find('.action-cancel').bind('click', function () {
         runtime.notify('cancel', {});
         $('.pdf_placeholder').hide();
@@ -45,7 +50,11 @@ function pdfXBlockInitEdit(runtime, element) {
         var formData = new FormData();
         formData.append('file', file);
         var request = new XMLHttpRequest();
-        var course_key = element[0].dataset['usageId'].split('+', 3).join('+').replace('block', 'course');
+        var splitCount = isLibrary ? 2 : 3;
+        var keyword = isLibrary ? 'lib-block' : 'block';
+        var replacement = isLibrary ? 'library' : 'course';
+        var course_key = usageId.split('+', splitCount).join('+').replace(keyword, replacement);
+
         var upload_url = '/assets/' + course_key + '/';
         var csrftoken = $.cookie('csrftoken');
         var alertField = $('.alert-field');
@@ -107,7 +116,12 @@ function pdfXBlockInitEdit(runtime, element) {
       var oFile = ev.dataTransfer.files[0];
       var request = new XMLHttpRequest();
       var reader = new FileReader();
-      var course_key = element[0].dataset['usageId'].split('+', 3).join('+').replace('block', 'course');
+      
+      // this is the new code:
+      var splitCount = isLibrary ? 2 : 3;
+      var keyword = isLibrary ? 'lib-block' : 'block';   
+      var replacement = isLibrary ? 'library' : 'course';
+      var course_key = usageId.split('+', splitCount).join('+').replace(keyword, replacement);
       var upload_url = '/assets/' + course_key + '/';
       var csrftoken = $.cookie('csrftoken');
       var alertField = $('.alert-field');
