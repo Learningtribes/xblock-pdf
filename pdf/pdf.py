@@ -2,17 +2,20 @@
 
 import pkg_resources
 from django.template import Context, Template
+from django.conf import settings
 
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
-from xblock.scorable import ScorableXBlockMixin, Score
 from .utils import _, DummyTranslationService
 import pkg_resources
 from mako.template import Template
-from xmodule.modulestore.django import modulestore
+from xmodule.contentstore.content import StaticContent
+from xmodule.contentstore.django import contentstore
+from pymongo import DESCENDING
+from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
 loader = ResourceLoader(__name__)
 
@@ -147,6 +150,8 @@ class PdfBlock(
         The secondary view of the XBlock, shown to teachers
         when editing the XBlock.
         """
+        max_file_size = getattr(settings, 'MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB', 10)
+        
         context = {
             'display_name': self.display_name,
             'name_help': _("This name appears in the horizontal navigation at the top of the page."),
@@ -154,17 +159,17 @@ class PdfBlock(
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'course_id': self.course_id,
-            'source_url': self.source_url
+            'source_url': self.source_url,
+            'max_file_size_in_mbs': max_file_size,
         }
         html = get_html('templates/html/pdf_edit.html', context)
-        #html = loader.render_django_template(
-        #    'templates/html/pdf_edit.html',
-        #    context=context,
-        #    i18n_service=self.i18n_service,
-        #)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
-        frag.initialize_js('pdfXBlockInitEdit')
+        frag.initialize_js('pdfXBlockInitEdit', {
+            'course_id': unicode(self.course_id),
+            'current_url': self.url,
+            'max_file_size_in_mbs': max_file_size,
+        })
         return frag
 
     @XBlock.json_handler
@@ -186,13 +191,83 @@ class PdfBlock(
         """
         self.display_name = data['display_name']
         self.url = data['url']
-        self.allow_download = True if data['allow_download'] == "True" else False  # Str to Bool translation
-        self.source_text = data['source_text']
-        self.source_url = data['source_url']
+        # Handle both string and boolean values for allow_download
+        allow_download = data.get('allow_download', True)
+        if isinstance(allow_download, bool):
+            self.allow_download = allow_download
+        else:
+            self.allow_download = allow_download == "True" or allow_download == "true" or allow_download is True
+        # Keep source_text and source_url for backwards compatibility
+        self.source_text = data.get('source_text', '')
+        self.source_url = data.get('source_url', '')
 
         return {
             'result': 'success',
         }
+
+    @XBlock.json_handler
+    def get_pdf_assets(self, data, suffix=''):
+        """
+        Fetch all PDF assets from the course.
+        Returns a list of PDF files.
+        """
+        course_key = self.course_id
+        
+        pdf_content_types = [
+            'application/pdf',
+            'application/x-pdf',
+        ]
+        
+        filter_params = {
+            'contentType': {'$in': pdf_content_types}
+        }
+        
+        # Get search term if provided
+        search = data.get('search', '')
+        if search:
+            filter_params['displayname'] = {'$regex': search, '$options': 'i'}
+        
+        try:
+            # Fetch PDF assets from contentstore
+            assets, total_count = contentstore().get_all_content_for_course(
+                course_key,
+                start=0,
+                maxresults=100,  # Limit to 100 PDFs
+                sort=[('uploadDate', DESCENDING)],
+                filter_params=filter_params
+            )
+            
+            # Convert to unified format
+            pdf_assets = []
+            for asset in assets:
+                asset_url = StaticContent.serialize_asset_key_with_slash(asset['asset_key'])
+                external_url = configuration_helpers.get_value(
+                    'SITE_LMS_DOMAIN_NAME', 
+                    settings.LMS_BASE
+                ) + asset_url
+                
+                pdf_assets.append({
+                    'id': unicode(asset['asset_key']),
+                    'display_name': asset['displayname'],
+                    'content_type': asset['contentType'],
+                    'url': asset_url,
+                    'external_url': external_url,
+                    'date_added': asset['uploadDate'].isoformat() if hasattr(asset['uploadDate'], 'isoformat') else str(asset['uploadDate']),
+                    'size': asset.get('length', 0),
+                })
+            
+            return {
+                'result': 'success',
+                'assets': pdf_assets,
+                'total_count': total_count,
+            }
+        except Exception as e:
+            return {
+                'result': 'error',
+                'message': str(e),
+                'assets': [],
+                'total_count': 0,
+            }
 
     @property
     def i18n_service(self):
