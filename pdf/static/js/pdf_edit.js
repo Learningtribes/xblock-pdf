@@ -25,16 +25,12 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
     
     function bindEvents() {
-        // Trigger file input
-        $uploadZone.on('click', function(e) {
-            e.preventDefault();
-            $fileInput.trigger('click');
-        });
+        var fileInputEl = $fileInput[0];
         
-        $element.on('click', '#pdf-browse-button', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $fileInput.trigger('click');
+        $uploadZone.on('click', function(e) {
+            if (e.target !== fileInputEl) {
+                fileInputEl.click();
+            }
         });
         
         // File input change
