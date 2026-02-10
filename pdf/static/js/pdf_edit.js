@@ -25,18 +25,16 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
     
     function bindEvents() {
-        // Browse button click
-        $browseButton.on('click', function(e) {
+        // Trigger file input
+        $uploadZone.on('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            $fileInput.click();
+            $fileInput.trigger('click');
         });
         
-        // Upload zone click (excluding browse button)
-        $uploadZone.on('click', function(e) {
-            if (!$(e.target).is('#pdf-browse-button')) {
-                $fileInput.click();
-            }
+        $element.on('click', '#pdf-browse-button', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $fileInput.trigger('click');
         });
         
         // File input change
@@ -127,13 +125,14 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
     
     function createPdfItem(asset) {
+        var assetUrl = asset.url;
         var isSelected = selectedPdfUrl && (
-            selectedPdfUrl === asset.url || 
+            selectedPdfUrl === assetUrl || 
             selectedPdfUrl === asset.external_url ||
-            selectedPdfUrl.indexOf(asset.url) !== -1
+            selectedPdfUrl.indexOf(assetUrl) !== -1
         );
         
-        var $item = $('<div class="pdf-file-item' + (isSelected ? ' selected' : '') + '" data-url="' + escapeHtml(asset.external_url || asset.url) + '"></div>');
+        var $item = $('<div class="pdf-file-item' + (isSelected ? ' selected' : '') + '" data-url="' + escapeHtml(assetUrl) + '"></div>');
         
         var $preview = $('<div class="pdf-file-preview"></div>');
         $preview.append('<span class="pdf-badge">pdf</span>');
@@ -147,7 +146,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
         
         // Click to select
         $item.on('click', function() {
-            selectPdf(asset.external_url || asset.url, asset.display_name);
+            selectPdf(assetUrl, asset.display_name);
         });
         
         return $item;
@@ -183,13 +182,11 @@ function pdfXBlockInitEdit(runtime, element, options) {
         $filesGrid.find('.pdf-file-item').removeClass('selected');
         $filesGrid.find('.pdf-file-item[data-url="' + escapeHtml(url) + '"]').addClass('selected');
         
-        // Optionally update the name field if it's empty or is a placeholder
+        // Always update the name field when selecting a different file
         var $nameInput = $element.find('#pdf_edit_display_name');
-        if (!$nameInput.val() || $nameInput.val() === 'PDF') {
-            // Extract filename without extension for display name
-            var nameWithoutExt = displayName.replace(/\.pdf$/i, '');
-            $nameInput.val(nameWithoutExt);
-        }
+        // Extract filename without extension for display name
+        var nameWithoutExt = displayName.replace(/\.pdf$/i, '');
+        $nameInput.val(nameWithoutExt);
     }
     
     function updateSelection() {
@@ -290,15 +287,13 @@ function pdfXBlockInitEdit(runtime, element, options) {
                         pdfAssets.unshift(newAsset);
                         
                         // Auto-select the newly uploaded file
-                        selectedPdfUrl = response.asset.external_url || response.asset.url;
+                        selectedPdfUrl = response.asset.url;
                         $urlInput.val(selectedPdfUrl);
                         
-                        // Update name if empty
+                        // Update name for newly uploaded file
                         var $nameInput = $element.find('#pdf_edit_display_name');
-                        if (!$nameInput.val() || $nameInput.val() === 'PDF') {
-                            var nameWithoutExt = file.name.replace(/\.pdf$/i, '');
-                            $nameInput.val(nameWithoutExt);
-                        }
+                        var nameWithoutExt = file.name.replace(/\.pdf$/i, '');
+                        $nameInput.val(nameWithoutExt);
                         
                         showNotification('success', gettext('Upload completed'));
                     }
