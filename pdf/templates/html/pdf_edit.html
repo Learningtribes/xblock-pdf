@@ -52,8 +52,8 @@ from django.utils.translation import ugettext as _
                     <label class="pdf-toggle" id="pdf-download-toggle" for="pdf_edit_allow_download">
                         <input type="checkbox" id="pdf_edit_allow_download" ${"checked" if allow_download else ""}>
                         <span class="pdf-toggle-slider" aria-hidden="true"></span>
-                        <span class="pdf-toggle-label">${_("PDF Download Allowed")}</span>
                     </label>
+                    <label class="pdf-toggle-label" for="pdf_edit_allow_download">${_("PDF Download Allowed")}</label>
                 </div>
             </div>
         </li>
