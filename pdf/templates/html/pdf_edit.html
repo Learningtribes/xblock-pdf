@@ -37,15 +37,6 @@ from django.utils.translation import ugettext as _
             </div>
         </li>
 
-        <li class="field comp-setting-entry is-set">
-            <div class="wrapper-comp-setting">
-                <label class="label setting-label" for="pdf_edit_url">${_("PDF URL")}</label>
-                <input class="input setting-input" id="pdf_edit_url" value="${url | h}" type="text"
-                       placeholder="${_('Select a file above, upload a PDF, or paste an external URL') | h}">
-            </div>
-            <span class="tip setting-help">${_("Course asset URLs are stored as relative paths (recommended for re-runs). You can also paste an external PDF URL.")}</span>
-        </li>
-
         <li class="field comp-setting-entry is-set pdf-toggle-field">
             <div class="wrapper-comp-setting">
                 <div class="pdf-toggle-wrapper">
@@ -58,6 +49,8 @@ from django.utils.translation import ugettext as _
             </div>
         </li>
     </ul>
+
+    <input type="hidden" id="pdf_edit_url" value="${url | h}">
 
     <!-- Action Buttons -->
     <div class="xblock-actions pdf-actions">
