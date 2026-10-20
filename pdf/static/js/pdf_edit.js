@@ -29,21 +29,21 @@ function pdfXBlockInitEdit(runtime, element, options) {
     function bindEvents() {
         var fileInputEl = $fileInput[0];
 
-        function openFilePicker(e) {
-            if (e) {
-                e.preventDefault();
-            }
-            if (e && e.target === fileInputEl) {
-                return;
-            }
-            fileInputEl.click();
-        }
+        // The file input lives inside the zone. A click handler that calls
+        // preventDefault cancels the dialog when the input's own click bubbles.
+        $fileInput.on('click', function(e) {
+            e.stopPropagation();
+        });
 
-        $uploadZone.on('click', openFilePicker);
+        $uploadZone.on('click', function(e) {
+            if (e.target !== fileInputEl) {
+                fileInputEl.click();
+            }
+        });
         $uploadZone.on('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
                 e.preventDefault();
-                openFilePicker();
+                fileInputEl.click();
             }
         });
 
