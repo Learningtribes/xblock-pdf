@@ -12,10 +12,6 @@ from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from .utils import _, DummyTranslationService
 import pkg_resources
 from mako.template import Template
-from xmodule.contentstore.content import StaticContent
-from xmodule.contentstore.django import contentstore
-from pymongo import DESCENDING
-from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
 loader = ResourceLoader(__name__)
 
@@ -197,77 +193,15 @@ class PdfBlock(
             self.allow_download = allow_download
         else:
             self.allow_download = allow_download == "True" or allow_download == "true" or allow_download is True
-        # Keep source_text and source_url for backwards compatibility
-        self.source_text = data.get('source_text', '')
-        self.source_url = data.get('source_url', '')
+        # Preserve existing source document link unless the editor sends these fields
+        if 'source_text' in data:
+            self.source_text = data['source_text']
+        if 'source_url' in data:
+            self.source_url = data['source_url']
 
         return {
             'result': 'success',
         }
-
-    @XBlock.json_handler
-    def get_pdf_assets(self, data, suffix=''):
-        """
-        Fetch all PDF assets from the course.
-        Returns a list of PDF files.
-        """
-        course_key = self.course_id
-        
-        pdf_content_types = [
-            'application/pdf',
-            'application/x-pdf',
-        ]
-        
-        filter_params = {
-            'contentType': {'$in': pdf_content_types}
-        }
-        
-        # Get search term if provided
-        search = data.get('search', '')
-        if search:
-            filter_params['displayname'] = {'$regex': search, '$options': 'i'}
-        
-        try:
-            # Fetch PDF assets from contentstore
-            assets, total_count = contentstore().get_all_content_for_course(
-                course_key,
-                start=0,
-                maxresults=100,  # Limit to 100 PDFs
-                sort=[('uploadDate', DESCENDING)],
-                filter_params=filter_params
-            )
-            
-            # Convert to unified format
-            pdf_assets = []
-            for asset in assets:
-                asset_url = StaticContent.serialize_asset_key_with_slash(asset['asset_key'])
-                external_url = configuration_helpers.get_value(
-                    'SITE_LMS_DOMAIN_NAME', 
-                    settings.LMS_BASE
-                ) + asset_url
-                
-                pdf_assets.append({
-                    'id': unicode(asset['asset_key']),
-                    'display_name': asset['displayname'],
-                    'content_type': asset['contentType'],
-                    'url': asset_url,
-                    'external_url': external_url,
-                    'date_added': asset['uploadDate'].isoformat() if hasattr(asset['uploadDate'], 'isoformat') else str(asset['uploadDate']),
-                    'size': asset.get('length', 0),
-                })
-            
-            return {
-                'result': 'success',
-                'assets': pdf_assets,
-                'total_count': total_count,
-            }
-        except Exception as e:
-            return {
-                'result': 'error',
-                'message': str(e),
-                'assets': [],
-                'total_count': 0,
-            }
 
     @property
     def i18n_service(self):

@@ -74,19 +74,28 @@ function pdfXBlockInitEdit(runtime, element, options) {
         });
     }
     
+    function isPdfAsset(asset) {
+        var contentType = (asset.content_type || '').toLowerCase();
+        var name = (asset.display_name || '').toLowerCase();
+        return contentType.indexOf('pdf') !== -1 || /\.pdf$/.test(name);
+    }
+    
     function fetchPdfAssets() {
-        var handlerUrl = runtime.handlerUrl(element, 'get_pdf_assets');
+        // Use Studio's author-only uploads listing (has_course_author_access).
+        // Do not use an XBlock handler — those are reachable from the LMS.
+        var listUrl = '/uploads/' + courseId +
+            '?format=json&file_type=Document&page_size=0';
         
         $.ajax({
-            url: handlerUrl,
-            type: 'POST',
-            data: JSON.stringify({}),
-            contentType: 'application/json',
+            url: listUrl,
+            type: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
             success: function(response) {
-                if (response.result === 'success') {
-                    pdfAssets = response.assets || [];
-                    renderPdfGrid();
-                }
+                var assets = response.assets || [];
+                pdfAssets = assets.filter(isPdfAsset);
+                renderPdfGrid();
             },
             error: function() {
                 console.error('Failed to fetch PDF assets');
@@ -128,7 +137,11 @@ function pdfXBlockInitEdit(runtime, element, options) {
             selectedPdfUrl.indexOf(assetUrl) !== -1
         );
         
-        var $item = $('<div class="pdf-file-item' + (isSelected ? ' selected' : '') + '" data-url="' + escapeHtml(assetUrl) + '"></div>');
+        var $item = $('<div class="pdf-file-item"></div>');
+        if (isSelected) {
+            $item.addClass('selected');
+        }
+        $item.attr('data-url', assetUrl);
         
         var $preview = $('<div class="pdf-file-preview"></div>');
         $preview.append('<span class="pdf-badge">pdf</span>');
@@ -136,8 +149,11 @@ function pdfXBlockInitEdit(runtime, element, options) {
         $item.append($preview);
         
         var $info = $('<div class="pdf-file-info"></div>');
-        $info.append('<div class="pdf-file-name" title="' + escapeHtml(asset.display_name) + '">' + escapeHtml(asset.display_name) + '</div>');
-        $info.append('<div class="pdf-file-size">' + formatFileSize(asset.size) + '</div>');
+        var $name = $('<div class="pdf-file-name"></div>');
+        $name.attr('title', asset.display_name);
+        $name.text(asset.display_name);
+        $info.append($name);
+        $info.append($('<div class="pdf-file-size"></div>').text(formatFileSize(asset.size)));
         $item.append($info);
         
         // Click to select
@@ -149,7 +165,8 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
     
     function createUploadingPdfItem(file) {
-        var $item = $('<div class="pdf-file-item uploading" data-filename="' + escapeHtml(file.name) + '"></div>');
+        var $item = $('<div class="pdf-file-item uploading"></div>');
+        $item.attr('data-filename', file.name);
         
         var $preview = $('<div class="pdf-file-preview"></div>');
         $preview.append('<span class="pdf-badge">pdf</span>');
@@ -157,14 +174,17 @@ function pdfXBlockInitEdit(runtime, element, options) {
         
         // Progress bar
         var $progress = $('<div class="pdf-upload-overlay"></div>');
-        $progress.append('<progress class="pdf-item-progress" value="' + (file.progress || 0) + '" max="100"></progress>');
+        $progress.append($('<progress class="pdf-item-progress" max="100"></progress>').val(file.progress || 0));
         $preview.append($progress);
         
         $item.append($preview);
         
         var $info = $('<div class="pdf-file-info"></div>');
-        $info.append('<div class="pdf-file-name" title="' + escapeHtml(file.name) + '">' + escapeHtml(file.name) + '</div>');
-        $info.append('<div class="pdf-file-size">' + formatFileSize(file.size) + '</div>');
+        var $name = $('<div class="pdf-file-name"></div>');
+        $name.attr('title', file.name);
+        $name.text(file.name);
+        $info.append($name);
+        $info.append($('<div class="pdf-file-size"></div>').text(formatFileSize(file.size)));
         $item.append($info);
         
         return $item;
@@ -174,9 +194,11 @@ function pdfXBlockInitEdit(runtime, element, options) {
         selectedPdfUrl = url;
         $urlInput.val(url);
         
-        // Update visual selection
+        // Update visual selection without building attribute selectors from user data
         $filesGrid.find('.pdf-file-item').removeClass('selected');
-        $filesGrid.find('.pdf-file-item[data-url="' + escapeHtml(url) + '"]').addClass('selected');
+        $filesGrid.find('.pdf-file-item').filter(function() {
+            return $(this).attr('data-url') === url;
+        }).addClass('selected');
         
         // Always update the name field when selecting a different file
         var $nameInput = $element.find('#pdf_edit_display_name');
@@ -190,7 +212,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
         if (selectedPdfUrl) {
             // Try to find matching item
             $filesGrid.find('.pdf-file-item').each(function() {
-                var itemUrl = $(this).data('url');
+                var itemUrl = $(this).attr('data-url');
                 if (itemUrl && (
                     selectedPdfUrl === itemUrl ||
                     selectedPdfUrl.indexOf(itemUrl) !== -1 ||
@@ -320,8 +342,9 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
     
     function updateUploadProgress(filename, progress) {
-        var $item = $filesGrid.find('.pdf-file-item[data-filename="' + escapeHtml(filename) + '"]');
-        $item.find('.pdf-item-progress').val(progress);
+        $filesGrid.find('.pdf-file-item').filter(function() {
+            return $(this).attr('data-filename') === filename;
+        }).find('.pdf-item-progress').val(progress);
     }
     
     function savePdf() {
@@ -334,12 +357,12 @@ function pdfXBlockInitEdit(runtime, element, options) {
             return;
         }
         
+        // Do not send source_text/source_url — omitting them preserves any
+        // existing source document link configured outside this editor.
         var data = {
             'display_name': displayName || 'PDF',
             'url': url,
-            'allow_download': allowDownload ? 'True' : 'False',
-            'source_text': '',
-            'source_url': ''
+            'allow_download': allowDownload ? 'True' : 'False'
         };
         
         runtime.notify('save', { state: 'start' });
@@ -384,13 +407,6 @@ function pdfXBlockInitEdit(runtime, element, options) {
         var size = (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1);
         
         return size + ' ' + units[i];
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        var div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
     
     // if gettext not available
