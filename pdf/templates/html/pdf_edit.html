@@ -8,14 +8,14 @@ from django.utils.translation import ugettext as _
         <div class="pdf-upload-area" id="pdf-upload-zone" role="button" tabindex="0"
              aria-label="${_('Click to upload a PDF, or drag and drop')}">
             <div class="upload-icon" aria-hidden="true">
-                <i class="far fa-images"></i>
+                <i class="far fa-file-pdf"></i>
             </div>
             <div class="upload-prompt">
                 <span class="upload-prompt-primary" id="pdf-browse-button">${_("Click to upload")}</span>
                 <span class="upload-prompt-secondary">${_("or drag and drop")}</span>
             </div>
             <div class="upload-info">
-                ${_("Maximum file size: {max_file_size}MB").format(max_file_size=max_file_size_in_mbs)}
+                ${_("PDF files less than {max_file_size} MB").format(max_file_size=max_file_size_in_mbs)}
             </div>
             <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" multiple style="display: none;"
                    aria-hidden="true" tabindex="-1">
