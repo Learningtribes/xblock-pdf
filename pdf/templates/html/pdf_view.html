@@ -7,11 +7,12 @@ except ImportError:
     from urlparse import urlparse
 %>
 
+
 <div class="pdf_placeholder" style="width: auto; height: 480px; display: none;"></div>
 
 <div class="pdf_block">
   <div class="block-header-wrapper pdf-header-wrapper">
-    <h3>${display_name}</h3>
+    <h3>${display_name | h}</h3>
   </div>
   <div class="block-label pdf-label">
     <span class="fal fa-file-pdf block-label-icon"></span>
@@ -36,9 +37,9 @@ except ImportError:
       pdf_url = url
   %>
   % if pdf_url != "":
-  <div class="pdf-wrapper ${mode}">
-    <object class="pdf-h5-container" data-src="${pdf_url}" data="" type="text/html" width="100%" height="600"></object>
-    <object class="pdf-embed-container" data-src="${pdf_url}" data="" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
+  <div class="pdf-wrapper ${mode | h}">
+    <object class="pdf-h5-container" data-src="${pdf_url | h}" data="" type="text/html" width="100%" height="600"></object>
+    <object class="pdf-embed-container" data-src="${pdf_url | h}" data="" type="application/pdf" width="100%" height="600"><p>${_("It appears you don't have a PDF plugin for this browser or the PDF URL is invalid.")}</p></object>
   </div>
   % else:
   <div class="colorful-boxes">
@@ -59,17 +60,17 @@ except ImportError:
   <ul>
     % if allow_download:
     <li class="pdf-download-button">
-      <a href="${ url }" download>${_("Download the PDF")}</a>
+      <a href="${url | h}" download>${_("Download the PDF")}</a>
     </li>
     % endif
 
     % if source_url != "":
     <li class="pdf-download-button">
-      <a href="${ source_url }" download>
+      <a href="${source_url | h}" download>
         % if source_text == "":
           ${_("Download the source document")}
         % else:
-          ${ source_text }
+          ${source_text | h}
         % endif
       </a>
     </li>

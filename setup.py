@@ -26,6 +26,7 @@ setup(
         'XBlock==1.2.9',
         'django-crequest',
         'lxml==3.8.0',
+        'six',
         'web-fragments==0.2.2',
     ],
     dependency_links=[

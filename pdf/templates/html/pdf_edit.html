@@ -5,8 +5,9 @@ from django.utils.translation import ugettext as _
 <div class="wrapper-comp-settings editor-with-buttons is-active settings-pdf pdf-editor-modal" id="settings-tab">
     <!-- Upload Zone -->
     <div class="pdf-upload-section">
-        <div class="pdf-upload-area" id="pdf-upload-zone">
-            <div class="upload-icon">
+        <div class="pdf-upload-area" id="pdf-upload-zone" role="button" tabindex="0"
+             aria-label="${_('Click to upload a PDF, or drag and drop')}">
+            <div class="upload-icon" aria-hidden="true">
                 <i class="far fa-images"></i>
             </div>
             <div class="upload-prompt">
@@ -16,13 +17,14 @@ from django.utils.translation import ugettext as _
             <div class="upload-info">
                 ${_("Maximum file size: {max_file_size}MB").format(max_file_size=max_file_size_in_mbs)}
             </div>
-            <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" multiple style="display: none;">
+            <input type="file" id="pdf-file-input" accept=".pdf,application/pdf" multiple style="display: none;"
+                   aria-hidden="true" tabindex="-1">
         </div>
     </div>
 
     <!-- PDF Files Grid -->
     <div class="pdf-files-section" id="pdf-files-section" style="display: none;">
-        <div class="pdf-files-grid" id="pdf-files-grid">
+        <div class="pdf-files-grid" id="pdf-files-grid" role="listbox" aria-label="${_('Course PDF files')}">
         </div>
     </div>
 
@@ -31,24 +33,31 @@ from django.utils.translation import ugettext as _
         <li class="field comp-setting-entry is-set">
             <div class="wrapper-comp-setting">
                 <label class="label setting-label" for="pdf_edit_display_name">${_("Name")}</label>
-                <input class="input setting-input" id="pdf_edit_display_name" value="${display_name}" type="text" placeholder="${_('Place holder')}">
+                <input class="input setting-input" id="pdf_edit_display_name" value="${display_name | h}" type="text" placeholder="${_('Place holder') | h}">
             </div>
+        </li>
+
+        <li class="field comp-setting-entry is-set">
+            <div class="wrapper-comp-setting">
+                <label class="label setting-label" for="pdf_edit_url">${_("PDF URL")}</label>
+                <input class="input setting-input" id="pdf_edit_url" value="${url | h}" type="text"
+                       placeholder="${_('Select a file above, upload a PDF, or paste an external URL') | h}">
+            </div>
+            <span class="tip setting-help">${_("Course asset URLs are stored as relative paths (recommended for re-runs). You can also paste an external PDF URL.")}</span>
         </li>
 
         <li class="field comp-setting-entry is-set pdf-toggle-field">
             <div class="wrapper-comp-setting">
                 <div class="pdf-toggle-wrapper">
-                    <label class="pdf-toggle" id="pdf-download-toggle">
+                    <label class="pdf-toggle" id="pdf-download-toggle" for="pdf_edit_allow_download">
                         <input type="checkbox" id="pdf_edit_allow_download" ${"checked" if allow_download else ""}>
-                        <span class="pdf-toggle-slider"></span>
+                        <span class="pdf-toggle-slider" aria-hidden="true"></span>
+                        <span class="pdf-toggle-label">${_("PDF Download Allowed")}</span>
                     </label>
-                    <span class="pdf-toggle-label">${_("PDF Download Allowed")}</span>
                 </div>
             </div>
         </li>
     </ul>
-
-    <input type="hidden" id="pdf_edit_url" value="${url}">
 
     <!-- Action Buttons -->
     <div class="xblock-actions pdf-actions">

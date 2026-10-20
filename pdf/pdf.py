@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
 """ pdfXBlock main Python class"""
+from __future__ import unicode_literals
 
 import pkg_resources
-from django.template import Context, Template
 from django.conf import settings
-
+from django.template import Context, Template as DjangoTemplate
+from mako.template import Template
+from six import text_type
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
+
 from .utils import _, DummyTranslationService
-import pkg_resources
-from mako.template import Template
 
 loader = ResourceLoader(__name__)
 
@@ -88,12 +90,14 @@ class PdfBlock(
         resource_content = pkg_resources.resource_string(__name__, resource_path)
         return resource_content.decode("utf8")
 
-    def render_template(self, template_path, context={}):
+    def render_template(self, template_path, context=None):
         """
         Evaluate a template by resource path, applying the provided context
         """
+        if context is None:
+            context = {}
         template_str = self.load_resource(template_path)
-        return Template(template_str).render(Context(context))
+        return DjangoTemplate(template_str).render(Context(context))
 
     '''
     Main functions
@@ -114,13 +118,6 @@ class PdfBlock(
 
         html = get_html('templates/html/pdf_view.html', context)
 
-        #html = loader.render_django_template(
-        #    'templates/html/pdf_view.html',
-        #    #'web/viewer.html',
-        #    context=context,
-        #    i18n_service=self.i18n_service,
-        #)
-
         event_type = 'edx.pdf.loaded'
         event_data = {
             'url': self.url,
@@ -130,14 +127,13 @@ class PdfBlock(
 
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
-        ##frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
         frag.initialize_js('pdfXBlockInitView', {
             'display_name': self.display_name,
             'url': self.url,
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'source_url': self.source_url,
-            'iframe_url': '/static/pdf/web/viewer.html?file='+self.url
+            'iframe_url': '/static/pdf/web/viewer.html?file=' + self.url
         })
         return frag
 
@@ -147,7 +143,7 @@ class PdfBlock(
         when editing the XBlock.
         """
         max_file_size = getattr(settings, 'MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB', 10)
-        
+
         context = {
             'display_name': self.display_name,
             'name_help': _("This name appears in the horizontal navigation at the top of the page."),
@@ -162,7 +158,7 @@ class PdfBlock(
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
         frag.initialize_js('pdfXBlockInitEdit', {
-            'course_id': unicode(self.course_id),
+            'course_id': text_type(self.course_id),
             'current_url': self.url,
             'max_file_size_in_mbs': max_file_size,
         })
