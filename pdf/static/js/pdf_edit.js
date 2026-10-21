@@ -273,7 +273,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
             if (file.size > maxFileSizeBytes) {
                 showNotification(
                     'error',
-                    gettext('File size exceeds the maximum limit of {size}MB.').replace('{size}', maxFileSizeInMbs)
+                    gettext('File size exceeds the maximum limit of {size} MB.').replace('{size}', maxFileSizeInMbs)
                 );
                 continue;
             }
@@ -410,10 +410,10 @@ function pdfXBlockInitEdit(runtime, element, options) {
             if (response.result === 'success') {
                 runtime.notify('save', { state: 'end' });
             } else {
-                runtime.notify('error', { msg: response.message || 'Save failed' });
+                runtime.notify('error', { msg: response.message || gettext('Save failed') });
             }
         }).fail(function() {
-            runtime.notify('error', { msg: 'Save failed' });
+            runtime.notify('error', { msg: gettext('Save failed') });
         });
     }
 
