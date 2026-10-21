@@ -123,7 +123,7 @@ class SavePdfTests(PdfBlockTestCase):
         result = self.save({
             'display_name': '  Week 1  ',
             'url': '  ' + RELATIVE_URL + '  ',
-            'allow_download': 'False',
+            'allow_download': False,
         })
 
         self.assertEqual(result['result'], 'success')
@@ -143,6 +143,16 @@ class SavePdfTests(PdfBlockTestCase):
 
         self.assertEqual(result['result'], 'success')
         self.assertEqual(self.block.url, HTTPS_URL)
+        self.assertTrue(self.block.allow_download)
+
+    def test_rejects_string_allow_download(self):
+        result = self.save({
+            'display_name': 'Lecture notes',
+            'url': RELATIVE_URL,
+            'allow_download': 'true',
+        })
+
+        self.assertEqual(result['result'], 'error')
         self.assertTrue(self.block.allow_download)
 
     def test_missing_fields_do_not_raise_and_keep_stored_values(self):

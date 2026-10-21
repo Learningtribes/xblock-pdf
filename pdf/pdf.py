@@ -220,6 +220,11 @@ class PdfBlock(
                 'result': 'error',
                 'message': _("The PDF URL must be an http, https, or site-relative path."),
             }
+        if 'allow_download' in data and not isinstance(data.get('allow_download'), bool):
+            return {
+                'result': 'error',
+                'message': _("allow_download must be true or false."),
+            }
 
         source_text = None
         if 'source_text' in data:
@@ -246,14 +251,8 @@ class PdfBlock(
 
         self.display_name = display_name.strip()
         self.url = url
-        # Handle both string and boolean values for allow_download
-        allow_download = data.get('allow_download', True)
-        if isinstance(allow_download, bool):
-            self.allow_download = allow_download
-        else:
-            self.allow_download = (
-                allow_download == "True" or allow_download == "true" or allow_download is True
-            )
+        if 'allow_download' in data:
+            self.allow_download = data['allow_download']
         if source_text is not None:
             self.source_text = source_text
         if source_url is not None:

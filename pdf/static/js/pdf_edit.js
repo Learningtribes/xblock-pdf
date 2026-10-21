@@ -400,13 +400,19 @@ function pdfXBlockInitEdit(runtime, element, options) {
         var data = {
             'display_name': displayName || 'PDF',
             'url': url,
-            'allow_download': allowDownload ? 'True' : 'False'
+            'allow_download': allowDownload
         };
 
         runtime.notify('save', { state: 'start' });
 
         var handlerUrl = runtime.handlerUrl(element, 'save_pdf');
-        $.post(handlerUrl, JSON.stringify(data)).done(function(response) {
+        $.ajax({
+            url: handlerUrl,
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json'
+        }).done(function(response) {
             if (response.result === 'success') {
                 runtime.notify('save', { state: 'end' });
             } else {
