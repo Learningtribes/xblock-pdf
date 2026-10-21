@@ -1,6 +1,7 @@
 /* Javascript for pdfXBlock. */
 function pdfXBlockInitEdit(runtime, element, options) {
-    var courseId = options.course_id;
+    var uploadsUrl = options.uploads_url;
+    var assetsUrl = options.assets_url;
     var currentUrl = options.current_url;
     var maxFileSizeInMbs = options.max_file_size_in_mbs || 10;
     // Match Studio server limit (assets.py uses MB * 1000 ** 2), not binary MiB.
@@ -97,8 +98,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
     function fetchPdfAssets() {
         // Use Studio's author-only uploads listing (has_course_author_access).
         // Do not use an XBlock handler — those are reachable from the LMS.
-        var listUrl = '/uploads/' + courseId +
-            '?format=json&file_type=Document&page_size=0';
+        var listUrl = uploadsUrl + '?format=json&file_type=Document&page_size=0';
 
         $.ajax({
             url: listUrl,
@@ -313,7 +313,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
         var formData = new FormData();
         formData.append('file', file);
 
-        var uploadUrl = '/assets/' + courseId + '/';
+        var uploadUrl = assetsUrl;
         var csrftoken = $.cookie('csrftoken');
         var xhr = new XMLHttpRequest();
 

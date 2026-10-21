@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import pkg_resources
 from django.conf import settings
+from django.urls import reverse
 from mako.template import Template
 from six import string_types, text_type
 try:
@@ -21,6 +22,21 @@ from .utils import _, DummyTranslationService
 def get_html(path, data):
     tplt = Template(pkg_resources.resource_string(__name__, path))
     return tplt.render_unicode(**data)
+
+
+def _studio_course_urls(course_id):
+    """
+    Studio paths for this course's uploads listing and asset handler.
+
+    Named routes live in the CMS URLconf (uploads_handler, assets_handler).
+    Reversing them here keeps course-key encoding and any mount prefix out of
+    the editor script.
+    """
+    course_key = text_type(course_id)
+    return {
+        'uploads_url': reverse('uploads_handler', kwargs={'course_key_string': course_key}),
+        'assets_url': reverse('assets_handler', kwargs={'course_key_string': course_key}),
+    }
 
 
 def _safe_pdf_url(value):
@@ -160,6 +176,7 @@ class PdfBlock(
         when editing the XBlock.
         """
         max_file_size = getattr(settings, 'MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB', 10)
+        studio_urls = _studio_course_urls(self.course_id)
 
         context = {
             'display_name': self.display_name,
@@ -175,7 +192,8 @@ class PdfBlock(
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
         frag.initialize_js('pdfXBlockInitEdit', {
-            'course_id': text_type(self.course_id),
+            'uploads_url': studio_urls['uploads_url'],
+            'assets_url': studio_urls['assets_url'],
             'current_url': self.url,
             'max_file_size_in_mbs': max_file_size,
         })

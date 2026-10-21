@@ -28,6 +28,7 @@ if not settings.configured:
         USE_L10N=False,
         LANGUAGE_CODE='en',
         MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB=10,
+        ROOT_URLCONF='tests.unit.studio_urls',
     )
 try:
     django.setup()
@@ -216,7 +217,7 @@ class SavePdfTests(PdfBlockTestCase):
 
 
 class StudioViewTests(PdfBlockTestCase):
-    """studio_view renders the editor and passes the course id to its JavaScript."""
+    """studio_view renders the editor and passes Studio asset URLs to its JavaScript."""
 
     def test_renders_editor_with_hidden_url_and_escaped_name(self):
         self.block.display_name = 'Notes <script>'
@@ -237,10 +238,14 @@ class StudioViewTests(PdfBlockTestCase):
 
         self.assertEqual(fragment.js_init_fn, 'pdfXBlockInitEdit')
         init_args = fragment_init_args(fragment)
-        self.assertEqual(init_args['course_id'], COURSE_ID)
+        self.assertEqual(init_args['uploads_url'], '/uploads/{0}'.format(COURSE_ID))
+        self.assertEqual(init_args['assets_url'], '/assets/{0}/'.format(COURSE_ID))
         self.assertEqual(init_args['current_url'], self.block.url)
         self.assertEqual(init_args['max_file_size_in_mbs'], settings.MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB)
-        self.assertIn('function pdfXBlockInitEdit', fragment_javascript(fragment))
+        script = fragment_javascript(fragment)
+        self.assertIn('function pdfXBlockInitEdit', script)
+        self.assertNotIn("'/uploads/'", script)
+        self.assertNotIn("'/assets/'", script)
 
 
 if __name__ == '__main__':
