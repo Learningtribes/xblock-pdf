@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import pkg_resources
 from django.conf import settings
-from django.template import Context, Template as DjangoTemplate
 from mako.template import Template
 from six import string_types, text_type
 try:
@@ -14,12 +13,9 @@ except ImportError:
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
-from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 
 from .utils import _, DummyTranslationService
-
-loader = ResourceLoader(__name__)
 
 
 def get_html(path, data):
@@ -119,15 +115,6 @@ class PdfBlock(
         """
         resource_content = pkg_resources.resource_string(__name__, resource_path)
         return resource_content.decode("utf8")
-
-    def render_template(self, template_path, context=None):
-        """
-        Evaluate a template by resource path, applying the provided context
-        """
-        if context is None:
-            context = {}
-        template_str = self.load_resource(template_path)
-        return DjangoTemplate(template_str).render(Context(context))
 
     '''
     Main functions
