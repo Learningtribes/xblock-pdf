@@ -386,7 +386,7 @@ function pdfXBlockInitEdit(runtime, element, options) {
     }
 
     function savePdf() {
-        var displayName = $nameInput.val();
+        var displayName = $nameInput.val().trim();
         var url = $urlInput.val().trim();
         var allowDownload = $element.find('#pdf_edit_allow_download').is(':checked');
 
@@ -416,10 +416,16 @@ function pdfXBlockInitEdit(runtime, element, options) {
             if (response.result === 'success') {
                 runtime.notify('save', { state: 'end' });
             } else {
-                runtime.notify('error', { msg: response.message || gettext('Save failed') });
+                runtime.notify('error', {
+                    title: gettext('Unable to save the PDF'),
+                    msg: response.message || gettext('Save failed')
+                });
             }
         }).fail(function() {
-            runtime.notify('error', { msg: gettext('Save failed') });
+            runtime.notify('error', {
+                title: gettext('Unable to save the PDF'),
+                msg: gettext('Save failed')
+            });
         });
     }
 

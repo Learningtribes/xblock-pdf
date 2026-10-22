@@ -219,6 +219,10 @@ class PdfBlock(
         Validate every field before writing. A missing name or URL, a non-text
         value, or a URL whose scheme is not http, https, or a site-relative
         path is rejected and the stored values are left unchanged.
+
+        A URL equal to the stored value is kept even when it would fail that
+        check, so a legacy block can still be renamed. The check applies only
+        when the URL changes.
         """
         if not isinstance(data, dict) or 'display_name' not in data or 'url' not in data:
             return {
@@ -227,7 +231,11 @@ class PdfBlock(
             }
 
         display_name = data.get('display_name')
-        url = _safe_pdf_url(data.get('url'))
+        raw_url = data.get('url')
+        if raw_url == self.url:
+            url = self.url
+        else:
+            url = _safe_pdf_url(raw_url)
         if not isinstance(display_name, string_types) or not display_name.strip():
             return {
                 'result': 'error',

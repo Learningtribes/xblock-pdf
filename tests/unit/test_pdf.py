@@ -182,6 +182,43 @@ class SavePdfTests(PdfBlockTestCase):
         self.assertEqual(self.block.display_name, 'Lecture notes')
         self.assertEqual(self.block.url, RELATIVE_URL)
 
+    def test_keeps_legacy_url_when_unchanged(self):
+        for legacy in ('files/notes.pdf', 'files/my notes.pdf'):
+            self.block.url = legacy
+            self.block.display_name = 'Lecture notes'
+
+            result = self.save({
+                'display_name': 'Renamed notes',
+                'url': legacy,
+            })
+
+            self.assertEqual(result['result'], 'success')
+            self.assertEqual(self.block.display_name, 'Renamed notes')
+            self.assertEqual(self.block.url, legacy)
+
+    def test_rejects_replacing_legacy_url_with_unsafe_url(self):
+        self.block.url = 'files/notes.pdf'
+
+        result = self.save({
+            'display_name': 'Renamed notes',
+            'url': 'javascript:alert(1)',
+        })
+
+        self.assertEqual(result['result'], 'error')
+        self.assertEqual(self.block.display_name, 'Lecture notes')
+        self.assertEqual(self.block.url, 'files/notes.pdf')
+
+    def test_replaces_legacy_url_with_safe_url(self):
+        self.block.url = 'files/notes.pdf'
+
+        result = self.save({
+            'display_name': 'Lecture notes',
+            'url': RELATIVE_URL,
+        })
+
+        self.assertEqual(result['result'], 'success')
+        self.assertEqual(self.block.url, RELATIVE_URL)
+
     def test_rejects_protocol_relative_url(self):
         result = self.save({
             'display_name': 'Lecture notes',
