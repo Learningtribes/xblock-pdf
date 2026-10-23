@@ -1,25 +1,68 @@
+# -*- coding: utf-8 -*-
 """ pdfXBlock main Python class"""
+from __future__ import unicode_literals
 
 import pkg_resources
-from django.template import Context, Template
-
+from django.conf import settings
+from django.urls import reverse
+from mako.template import Template
+from six import string_types, text_type
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
-from xblockutils.resources import ResourceLoader
 from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
-from xblock.scorable import ScorableXBlockMixin, Score
-from .utils import _, DummyTranslationService
-import pkg_resources
-from mako.template import Template
-from xmodule.modulestore.django import modulestore
 
-loader = ResourceLoader(__name__)
+from .utils import _, DummyTranslationService
 
 
 def get_html(path, data):
     tplt = Template(pkg_resources.resource_string(__name__, path))
     return tplt.render_unicode(**data)
+
+
+def _studio_course_urls(course_id):
+    """
+    Studio paths for this course's uploads listing and asset handler.
+
+    Named routes live in the CMS URLconf (uploads_handler, assets_handler).
+    Reversing them here keeps course-key encoding and any mount prefix out of
+    the editor script.
+    """
+    course_key = text_type(course_id)
+    return {
+        'uploads_url': reverse('uploads_handler', kwargs={'course_key_string': course_key}),
+        'assets_url': reverse('assets_handler', kwargs={'course_key_string': course_key}),
+    }
+
+
+def _safe_pdf_url(value):
+    """
+    Accept only http(s) URLs and site-relative paths (a single leading slash).
+
+    HTML escaping does not stop a javascript: or data: URL once it is written
+    into href or data-src. Numbers and other non-text values are rejected.
+    """
+    if not isinstance(value, string_types):
+        return None
+    url = value.strip()
+    if not url or '\\' in url:
+        return None
+    for char in url:
+        code = ord(char)
+        if code < 33 or code == 127:
+            return None
+    # Protocol-relative ("//host") and backslash-normalized paths are not on-site.
+    if url.startswith('/') and not url.startswith('//'):
+        return url
+    parsed = urlparse(url)
+    scheme = (parsed.scheme or '').lower()
+    if scheme in ('http', 'https') and parsed.netloc:
+        return url
+    return None
 
 
 @XBlock.wants('settings')
@@ -89,13 +132,6 @@ class PdfBlock(
         resource_content = pkg_resources.resource_string(__name__, resource_path)
         return resource_content.decode("utf8")
 
-    def render_template(self, template_path, context={}):
-        """
-        Evaluate a template by resource path, applying the provided context
-        """
-        template_str = self.load_resource(template_path)
-        return Template(template_str).render(Context(context))
-
     '''
     Main functions
     '''
@@ -115,13 +151,6 @@ class PdfBlock(
 
         html = get_html('templates/html/pdf_view.html', context)
 
-        #html = loader.render_django_template(
-        #    'templates/html/pdf_view.html',
-        #    #'web/viewer.html',
-        #    context=context,
-        #    i18n_service=self.i18n_service,
-        #)
-
         event_type = 'edx.pdf.loaded'
         event_data = {
             'url': self.url,
@@ -131,14 +160,13 @@ class PdfBlock(
 
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
-        ##frag.add_resource_url(self.runtime.local_resource_url(self, "public/"))
         frag.initialize_js('pdfXBlockInitView', {
             'display_name': self.display_name,
             'url': self.url,
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'source_url': self.source_url,
-            'iframe_url': '/static/pdf/web/viewer.html?file='+self.url
+            'iframe_url': '/static/pdf/web/viewer.html?file=' + self.url
         })
         return frag
 
@@ -147,6 +175,9 @@ class PdfBlock(
         The secondary view of the XBlock, shown to teachers
         when editing the XBlock.
         """
+        max_file_size = getattr(settings, 'MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB', 10)
+        studio_urls = _studio_course_urls(self.course_id)
+
         context = {
             'display_name': self.display_name,
             'name_help': _("This name appears in the horizontal navigation at the top of the page."),
@@ -154,17 +185,18 @@ class PdfBlock(
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'course_id': self.course_id,
-            'source_url': self.source_url
+            'source_url': self.source_url,
+            'max_file_size_in_mbs': max_file_size,
         }
         html = get_html('templates/html/pdf_edit.html', context)
-        #html = loader.render_django_template(
-        #    'templates/html/pdf_edit.html',
-        #    context=context,
-        #    i18n_service=self.i18n_service,
-        #)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
-        frag.initialize_js('pdfXBlockInitEdit')
+        frag.initialize_js('pdfXBlockInitEdit', {
+            'uploads_url': studio_urls['uploads_url'],
+            'assets_url': studio_urls['assets_url'],
+            'current_url': self.url,
+            'max_file_size_in_mbs': max_file_size,
+        })
         return frag
 
     @XBlock.json_handler
@@ -183,12 +215,74 @@ class PdfBlock(
     def save_pdf(self, data, suffix=''):
         """
         The saving handler.
+
+        Validate every field before writing. A missing name or URL, a non-text
+        value, or a URL whose scheme is not http, https, or a site-relative
+        path is rejected and the stored values are left unchanged.
+
+        A URL equal to the stored value is kept even when it would fail that
+        check, so a legacy block can still be renamed. The check applies only
+        when the URL changes.
         """
-        self.display_name = data['display_name']
-        self.url = data['url']
-        self.allow_download = True if data['allow_download'] == "True" else False  # Str to Bool translation
-        self.source_text = data['source_text']
-        self.source_url = data['source_url']
+        if not isinstance(data, dict) or 'display_name' not in data or 'url' not in data:
+            return {
+                'result': 'error',
+                'message': _("Name and PDF URL are required."),
+            }
+
+        display_name = data.get('display_name')
+        raw_url = data.get('url')
+        if raw_url == self.url:
+            url = self.url
+        else:
+            url = _safe_pdf_url(raw_url)
+        if not isinstance(display_name, string_types) or not display_name.strip():
+            return {
+                'result': 'error',
+                'message': _("Enter a name."),
+            }
+        if url is None:
+            return {
+                'result': 'error',
+                'message': _("The PDF URL must be an http, https, or site-relative path."),
+            }
+        if 'allow_download' in data and not isinstance(data.get('allow_download'), bool):
+            return {
+                'result': 'error',
+                'message': _("allow_download must be true or false."),
+            }
+
+        source_text = None
+        if 'source_text' in data:
+            source_text = data.get('source_text')
+            if not isinstance(source_text, string_types):
+                return {
+                    'result': 'error',
+                    'message': _("Source document text must be text."),
+                }
+
+        # Same scheme rules as the PDF URL: this value is written to a download href.
+        source_url = None
+        if 'source_url' in data:
+            raw_source_url = data.get('source_url')
+            if raw_source_url in (None, ''):
+                source_url = ''
+            else:
+                source_url = _safe_pdf_url(raw_source_url)
+                if source_url is None:
+                    return {
+                        'result': 'error',
+                        'message': _("The source URL must be an http, https, or site-relative path."),
+                    }
+
+        self.display_name = display_name.strip()
+        self.url = url
+        if 'allow_download' in data:
+            self.allow_download = data['allow_download']
+        if source_text is not None:
+            self.source_text = source_text
+        if source_url is not None:
+            self.source_url = source_url
 
         return {
             'result': 'success',
