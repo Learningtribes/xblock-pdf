@@ -17,16 +17,16 @@ def package_data(pkg, root_list):
 
 setup(
     name='xblock-pdf',
-    version='v1.0.2-rg',
+    version='1.0.2.post0',
     description='Course component (Open edX XBlock) that provides an easy way to embed a PDF',
     packages=[
         'pdf',
     ],
     install_requires=[
-        'XBlock==1.2.9',
+        'XBlock>=1.2.9',
         'django-crequest',
-        'lxml==3.8.0',
-        'web-fragments==0.2.2',
+        'lxml',
+        'web-fragments>=0.2.2',
     ],
     dependency_links=[
         'git+https://github.com/Learningtribes/xblock-utils.git@ec95e5e718c4144dc8a43d116a545f210d929667#egg=xblock-utils'
