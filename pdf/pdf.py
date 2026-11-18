@@ -1,28 +1,24 @@
 # -*- coding: utf-8 -*-
 """ pdfXBlock main Python class"""
-from __future__ import unicode_literals
+from importlib.resources import files
 
-import pkg_resources
 from django.conf import settings
 from django.urls import reverse
 from mako.template import Template
-from six import string_types, text_type
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 from xblock.core import XBlock
 from xblock.exceptions import JsonHandlerError
 from student.roles import CourseInstructorRole, CourseStaffRole
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
-from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
+from xblock.utils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 
 from .utils import _, DummyTranslationService
 
 
 def get_html(path, data):
-    tplt = Template(pkg_resources.resource_string(__name__, path))
+    source = files('pdf').joinpath(path).read_text(encoding='utf-8')
+    tplt = Template(source)
     return tplt.render_unicode(**data)
 
 
@@ -34,7 +30,7 @@ def _studio_course_urls(course_id):
     Reversing them here keeps course-key encoding and any mount prefix out of
     the editor script.
     """
-    course_key = text_type(course_id)
+    course_key = str(course_id)
     return {
         'uploads_url': reverse('uploads_handler', kwargs={'course_key_string': course_key}),
         'assets_url': reverse('assets_handler', kwargs={'course_key_string': course_key}),
@@ -48,7 +44,7 @@ def _safe_pdf_url(value):
     HTML escaping does not stop a javascript: or data: URL once it is written
     into href or data-src. Numbers and other non-text values are rejected.
     """
-    if not isinstance(value, string_types):
+    if not isinstance(value, str):
         return None
     url = value.strip()
     if not url or '\\' in url:
@@ -131,8 +127,7 @@ class PdfBlock(
         """
         Gets the content of a resource
         """
-        resource_content = pkg_resources.resource_string(__name__, resource_path)
-        return resource_content.decode("utf8")
+        return files('pdf').joinpath(resource_path.lstrip('/')).read_text(encoding='utf-8')
 
     '''
     Main functions

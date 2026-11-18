@@ -5,7 +5,7 @@ Minimal CMS routes so PdfBlock.studio_view can reverse uploads and assets.
 Patterns match platform/cms/urls.py (COURSE_KEY_PATTERN and ASSET_KEY_PATTERN).
 """
 
-from django.conf.urls import url
+from django.urls import re_path
 
 
 def _unused(request, **kwargs):
@@ -18,6 +18,6 @@ _ASSET_KEY = (
 )
 
 urlpatterns = [
-    url(r'^uploads/{}$'.format(_COURSE_KEY), _unused, name='uploads_handler'),
-    url(r'^assets/{}/{}?$'.format(_COURSE_KEY, _ASSET_KEY), _unused, name='assets_handler'),
+    re_path(r'^uploads/{}$'.format(_COURSE_KEY), _unused, name='uploads_handler'),
+    re_path(r'^assets/{}/{}?$'.format(_COURSE_KEY, _ASSET_KEY), _unused, name='assets_handler'),
 ]

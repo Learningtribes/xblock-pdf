@@ -7,7 +7,6 @@ import unittest
 
 import django
 from django.conf import settings
-from six import text_type
 from webob import Request
 from xblock.field_data import DictFieldData
 from xblock.runtime import DictKeyValueStore, KvsFieldData
@@ -58,7 +57,7 @@ def response_json(response):
     if isinstance(response, dict):
         return response
     body = response.body
-    if not isinstance(body, text_type):
+    if not isinstance(body, str):
         body = body.decode('utf-8')
     return json.loads(body)
 
@@ -76,10 +75,10 @@ def fragment_javascript(fragment):
         data = getattr(resource, 'data', None)
         if data is None and isinstance(resource, (list, tuple)) and len(resource) > 1:
             data = resource[1]
-        if isinstance(data, text_type):
+        if isinstance(data, str):
             chunks.append(data)
         elif data is not None:
-            chunks.append(text_type(data))
+            chunks.append(str(data))
     return u'\n'.join(chunks)
 
 
@@ -87,7 +86,7 @@ def fragment_init_args(fragment):
     raw_args = getattr(fragment, 'json_init_args', None)
     if raw_args is None:
         raw_args = getattr(fragment, '_json_init_args', None)
-    if isinstance(raw_args, text_type):
+    if isinstance(raw_args, str):
         return json.loads(raw_args)
     if raw_args is None:
         return {}
